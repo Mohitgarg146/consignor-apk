@@ -21,7 +21,15 @@ jobs:
         pip3 install --upgrade pip
         pip3 install buildozer cython
 
-    - name: Init Buildozer
+    - name: Accept Android SDK licenses
+      run: |
+        yes | sdkmanager --licenses || true
+
+    - name: Install Android SDK Build Tools
+      run: |
+        sdkmanager "build-tools;33.0.2" "platform-tools" "platforms;android-33"
+
+   - name: Init Buildozer
       run: |
         buildozer init
 

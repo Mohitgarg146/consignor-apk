@@ -2,50 +2,52 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install system packages
-      run: |
-        sudo apt update
-        sudo apt install -y python3 python3-pip git zip unzip openjdk-17-jdk
+      - name: Install system packages
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip git zip unzip openjdk-17-jdk
 
-    - name: Install Python tools
-      run: |
-        pip3 install --upgrade pip
-        pip3 install buildozer cython
+      - name: Install Python tools
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install buildozer cython
 
-    - name: Accept Android SDK licenses
-      run: |
-        yes | sdkmanager --licenses || true
+      - name: Accept Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses || true
 
-    - name: Install Android SDK Build Tools
-      run: |
-        sdkmanager "build-tools;33.0.2" "platform-tools" "platforms;android-33"
+      - name: Install Android SDK components
+        run: |
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-   - name: Init Buildozer
-      run: |
-        buildozer init
+      - name: Init Buildozer
+        run: |
+          buildozer init
 
-    - name: Configure Buildozer
-      run: |
-        sed -i 's/^requirements = .*/requirements = python3,kivy,pandas,openpyxl/' buildozer.spec
-        sed -i 's/^android.api = .*/android.api = 33/' buildozer.spec
-        sed -i 's/^source.include_exts = .*/source.include_exts = py,xlsx/' buildozer.spec
-        sed -i 's/^# android.permissions = .*/android.permissions = READ_EXTERNAL_STORAGE/' buildozer.spec
+      - name: Configure Buildozer
+        run: |
+          sed -i 's/^requirements = .*/requirements = python3,kivy,pandas,openpyxl/' buildozer.spec
+          sed -i 's/^android.api = .*/android.api = 33/' buildozer.spec
+          sed -i 's/^source.include_exts = .*/source.include_exts = py,xlsx/' buildozer.spec
+          sed -i 's/^# android.permissions = .*/android.permissions = READ_EXTERNAL_STORAGE/' buildozer.spec
 
-    - name: Build APK
-      run: |
-        buildozer -v android debug
+      - name: Build APK
+        run: |
+          buildozer -v android debug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: consignor-apk
-        path: bin/*.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: consignor-apk
+          path: bin/*.apk
